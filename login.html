@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstralGuard Cyber Academy Student - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- CryptoJS (correct SRI) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #00ff41;
+            --secondary: #008f11;
+            --dark: #0d0208;
+            --darker: #000000;
+            --light: #c8ffc8;
+            --error: #ff0033;
+            --warning: #ffcc00;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .cyber-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+        
+        .login-container {
+            max-width: 500px;
+            width: 100%;
+            padding: 30px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .login-box {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--secondary);
+            border-radius: 5px;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                transparent 0%,
+                transparent 49%,
+                rgba(0, 255, 65, 0.1) 50%,
+                transparent 51%,
+                transparent 100%
+            );
+            animation: scan 8s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateY(0) translateX(0); }
+            100% { transform: translateY(100%) translateX(100%); }
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        
+        .logo i {
+            color: var(--secondary);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-header h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+        
+        .login-header p {
+            color: rgba(200, 255, 200, 0.7);
+            font-size: 0.9rem;
+        }
+        
+        .login-header::after {
+            content: "";
+            display: block;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            margin: 15px auto 0;
+            border-radius: 2px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--light);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--secondary);
+            border-radius: 4px;
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+        
+        .password-container {
+            position: relative;
+        }
+        
+        .eye-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--secondary);
+            transition: all 0.3s ease;
+        }
+        
+        .eye-toggle:hover {
+            color: var(--primary);
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--darker);
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 255, 65, 0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+            font-size: 0.9rem;
+        }
+        
+        .success {
+            background-color: rgba(0, 255, 65, 0.2);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .error {
+            background-color: rgba(255, 0, 51, 0.2);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+        
+        .security-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--darker);
+            border: 1px solid var(--primary);
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+        }
+        
+        .security-badge i {
+            color: var(--primary);
+        }
+        
+        .footer-links {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .footer-link {
+            color: rgba(200, 255, 200, 0.6);
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-link:hover {
+            color: var(--primary);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .loading-text {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .loading-bar {
+            height: 2px;
+            width: 100%;
+            background: rgba(0, 255, 65, 0.2);
+            position: relative;
+            overflow: hidden;
+            border-radius: 2px;
+        }
+        
+        .loading-bar::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 30%;
+            background: var(--primary);
+            animation: loading 2s infinite ease-in-out;
+        }
+        
+        @keyframes loading {
+            0% { left: -30%; }
+            100% { left: 100%; }
+        }
+        
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 20px;
+            }
+            
+            .login-box {
+                padding: 30px 20px;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .login-header h2 {
+                font-size: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .footer-links {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-grid"></div>
+    <canvas id="matrix" class="matrix-rain"></canvas>
+    
+    <div class="login-container">
+        <div class="login-box">
+            <div class="logo">
+                <i class="fas fa-user-secret"></i>
+                LAB-101
+            </div>
+            
+            <div class="login-header">
+                <h2>STUDENT ACCESS PORTAL</h2>
+                <p>Authentication required</p>
+            </div>
+            
+            <form id="loginForm" method="POST" autocomplete="off">
+                <input type="hidden" name="access_key" id="access_key" value="">
+                
+                <div class="form-group">
+                    <label for="email">STUDENT EMAIL</label>
+                    <input type="email" id="email" name="email" placeholder="student@domain.com" required
+                           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                </div>
+                
+                <div class="form-group">
+                    <label for="access_token">ACCESS TOKEN</label>
+                    <div class="password-container">
+                        <input type="password" id="access_token" name="access_token" placeholder="············" required 
+                               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        <i class="fas fa-eye-slash eye-toggle" id="eyeToggle"></i>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fingerprint">DEVICE FINGERPRINT</label>
+                    <input type="hidden" id="fingerprint" name="fingerprint" required>
+                </div>
+                
+                <button type="submit" class="btn" id="submitBtn">
+                    <i class="fas fa-lock"></i> INITIATE AUTHENTICATION
+                </button>
+                
+                <div id="statusMessage" class="status-message"></div>
+                
+                <div class="loading" id="loadingIndicator">
+                    <div class="loading-text">VERIFYING CREDENTIALS...</div>
+                    <div class="loading-bar"></div>
+                </div>
+            </form>
+            
+            <div class="footer-links">
+                <a href="#" class="footer-link">Token Recovery</a>
+                <a href="#" class="footer-link">Access Request</a>
+                <a href="#" class="footer-link">Security Protocol</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="security-badge">
+        <i class="fas fa-lock"></i>
+        <span>End-to-End Encryption</span>
+    </div>
+    
+    <script>
+        // ------------------ MATRIX RAIN ------------------
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        
+        function sizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        sizeCanvas();
+        
+        const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
+        const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const nums = '0123456789';
+        const symbols = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~';
+        
+        const alphabet = katakana + latin + nums + symbols;
+        
+        const fontSize = 14;
+        let columns = Math.floor(canvas.width / fontSize);
+        const rainDrops = Array(columns).fill(1);
+        
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < rainDrops.length; i++) {
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+                
+                if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    rainDrops[i] = 0;
+                }
+                rainDrops[i]++;
+            }
+        }
+        
+        setInterval(draw, 30);
+        
+        window.addEventListener('resize', () => {
+            sizeCanvas();
+            columns = Math.floor(canvas.width / fontSize);
+        });
+        
+        // ------------------ UI LOGIC ------------------
+        const eyeToggle = document.getElementById('eyeToggle');
+        const accessTokenInput = document.getElementById('access_token');
+        
+        eyeToggle.addEventListener('click', function() {
+            if (accessTokenInput.type === 'password') {
+                accessTokenInput.type = 'text';
+                this.classList.remove('fa-eye-slash');
+                this.classList.add('fa-eye');
+            } else {
+                accessTokenInput.type = 'password';
+                this.classList.remove('fa-eye');
+                this.classList.add('fa-eye-slash');
+            }
+        });
+        
+        // ------------------ FINGERPRINT LOGIC ------------------
+        function generateFingerprint() {
+            const components = [
+                navigator.userAgent,
+                navigator.language,
+                screen.width + 'x' + screen.height,
+                new Date().getTimezoneOffset(),
+                Intl.DateTimeFormat().resolvedOptions().timeZone
+            ];
+            const entropy = components.join('|');
+            const hash = CryptoJS.SHA256(entropy).toString();
+            return 'fp_' + hash.substring(0, 32);
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            const fingerprint = generateFingerprint();
+            document.getElementById('fingerprint').value = fingerprint;
+        });
+
+        // ------------------ SECURITY / LOGIN LOGIC ------------------
+        // Read access_key from the URL and store it
+        function getAccessKeyFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const accessKey = urlParams.get('access_key');
+            if (accessKey) {
+                document.getElementById('access_key').value = accessKey;
+            }
+        }
+
+        // Ensure everything runs after DOM is ready
+        window.addEventListener('DOMContentLoaded', () => {
+            getAccessKeyFromURL();
+        });
+
+        // Form submission handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const statusMessage = document.getElementById('statusMessage');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Basic guards
+            const accessKey = document.getElementById('access_key').value.trim();
+            if (!accessKey) {
+                statusMessage.textContent = 'Missing access key.';
+                statusMessage.className = 'status-message error';
+                statusMessage.style.display = 'block';
+                return;
+            }
+
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            statusMessage.style.display = 'none';
+            submitBtn.disabled = true;
+
+            const formData = {
+                email: document.getElementById('email').value.trim(),
+                access_token: document.getElementById('access_token').value,
+                fingerprint: document.getElementById('fingerprint').value
+            };
+
+            if (!formData.fingerprint) {
+                statusMessage.textContent = 'Device fingerprint missing. Please reload the page.';
+                statusMessage.className = 'status-message error';
+                statusMessage.style.display = 'block';
+    
+                loadingIndicator.style.display = 'none';
+                submitBtn.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/login?access_key=${encodeURIComponent(accessKey)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'x-device-fingerprint': formData.fingerprint
+                    },
+                    credentials: 'include', // ensure the Set-Cookie header (session) is honored
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json().catch(() => ({}));
+
+                if (response.ok) {
+                    statusMessage.textContent = 'Login successful! Redirecting...';
+                    statusMessage.className = 'status-message success';
+                    statusMessage.style.display = 'block';
+
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1500);
+                } else {
+                    const msg = data && data.error ? data.error : `Login failed (${response.status}).`;
+                    statusMessage.textContent = msg;
+                    statusMessage.className = 'status-message error';
+                    statusMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                statusMessage.textContent = 'Network error. Please try again.';
+                statusMessage.className = 'status-message error';
+                statusMessage.style.display = 'block';
+            } finally {
+                loadingIndicator.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
